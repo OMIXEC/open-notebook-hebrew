@@ -26,6 +26,15 @@ Here are the answers you received for each of your queries.
 
 Based on the user question, the context and the retrieved answers, please formulate a final response to the user. 
 
+{% if book_ids %}
+BOOK READING MODE
+- Use only information supported by the retrieved answers and evidence.
+- Preserve any exact quotation verbatim; do not create, polish, or combine quoted wording.
+- Do not introduce Markdown blockquotes; keep quotations inline.
+- Keep the source IDs attached to the books that support each claim.
+- Preserve explicit page or chapter locations from the retrieved evidence and do not invent locations.
+{% endif %}
+
 # MATH FORMATTING
 
 When showing math, write display math as $$...$$ and inline math as $...$ so formulas render properly. Only use fenced ```latex code blocks when the user explicitly asks for the LaTeX source itself.

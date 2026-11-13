@@ -39,6 +39,8 @@ export interface AskRequest {
   final_answer_model: string
   /** Restrict every search of the strategy to these notebooks; omit or empty for all (#574, #87). */
   notebook_ids?: string[]
+  /** Restrict every Ask retrieval to these books. */
+  book_ids?: string[]
 }
 
 export interface AskResponse {

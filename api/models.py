@@ -86,6 +86,19 @@ class AskRequest(NotebookScopeMixin):
     strategy_model: str = Field(..., description="Model ID for query strategy")
     answer_model: str = Field(..., description="Model ID for individual answers")
     final_answer_model: str = Field(..., description="Model ID for final answer")
+    book_ids: Optional[List[str]] = Field(
+        None, max_length=50, description="Restrict Ask to these book sources"
+    )
+
+    @model_validator(mode="after")
+    def validate_book_ids(self):
+        if self.book_ids is not None and not self.book_ids:
+            raise ValueError("book_ids must contain at least one book")
+        return self
+
+    @property
+    def scope_book_ids(self) -> List[str]:
+        return list(dict.fromkeys(self.book_ids or []))
 
 
 class AskResponse(BaseModel):
@@ -345,6 +358,9 @@ class SourceCreate(BaseModel):
     file_path: Optional[str] = Field(None, description="File path for upload type")
     content: Optional[str] = Field(None, description="Text content for text type")
     title: Optional[str] = Field(None, description="Source title")
+    kind: Literal["source", "book"] = Field("source", description="Source kind")
+    author: Optional[str] = Field(None, description="Book author")
+    isbn: Optional[str] = Field(None, description="Book ISBN")
     transformations: Optional[List[str]] = Field(
         default_factory=list,
         max_length=50,
@@ -387,6 +403,9 @@ class SourceUpdate(BaseModel):
 class SourceResponse(BaseModel):
     id: str
     title: Optional[str]
+    kind: Literal["source", "book"] = "source"
+    author: Optional[str] = None
+    isbn: Optional[str] = None
     topics: Optional[List[str]]
     asset: Optional[AssetModel]
     full_text: Optional[str]
@@ -406,6 +425,9 @@ class SourceResponse(BaseModel):
 class SourceListResponse(BaseModel):
     id: str
     title: Optional[str]
+    kind: Literal["source", "book"] = "source"
+    author: Optional[str] = None
+    isbn: Optional[str] = None
     topics: Optional[List[str]]
     asset: Optional[AssetModel]
     embedded: bool  # Boolean flag indicating if source has embeddings

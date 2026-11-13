@@ -42,6 +42,10 @@ Click **Done**. You can click **Done** on any step to submit with the current ch
 | Video | MP4, AVI, MOV, WMV |
 | Images | JPG, JPEG, PNG, TIFF (only when Docling is enabled; see [Content Processing Engines](content-processing-engines.md)) |
 
+### Books Library
+
+PDF and EPUB books can also be added from **Books** in the sidebar. Select one or more books in the library to ask questions across that selection, or use the built-in reading actions for summaries, themes, characters, timelines, key concepts and exact-quote lookup. Book answers are restricted to the selected books, cite their source IDs, and check quoted text against retrieved passages. Page and chapter references are included only when extraction preserves an explicit location marker.
+
 - **Audio and video are transcribed** with your **Speech-to-Text Model** (set in **Manage → Models → Default Model Assignments**). Without one, they can't be processed. For a local option, see [Local Speech-to-Text](../5-CONFIGURATION/local-stt.md).
 - **Upload size** is limited to 100 MB by default; `OPEN_NOTEBOOK_MAX_UPLOAD_SIZE_MB` changes the API's limit. By default the browser sends uploads straight to the API (port 5055), so that is the only limit in the app. If your setup routes API calls through the frontend's `/api` path instead (for example `API_URL` set to the frontend's own address), the frontend also caps request bodies at 100 MB. A reverse proxy in front may add its own limit.
 - **Scanned PDFs** need Docling with OCR to give usable text.

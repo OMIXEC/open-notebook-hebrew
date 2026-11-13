@@ -21,6 +21,9 @@ export interface NoteResponse {
 export interface SourceListResponse {
   id: string
   title: string | null
+  kind?: 'source' | 'book'
+  author?: string | null
+  isbn?: string | null
   topics?: string[]                  // Make optional to match Python API
   asset: {
     file_path?: string
@@ -113,6 +116,9 @@ export interface CreateSourceRequest {
   file_path?: string
   content?: string
   title?: string
+  kind?: 'source' | 'book'
+  author?: string
+  isbn?: string
   transformations?: string[]
   embed?: boolean
   delete_source?: boolean

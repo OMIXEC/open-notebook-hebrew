@@ -190,6 +190,9 @@ def parse_source_form_data(
     url: Optional[str] = Form(None),
     content: Optional[str] = Form(None),
     title: Optional[str] = Form(None),
+    kind: str = Form("source"),
+    author: Optional[str] = Form(None),
+    isbn: Optional[str] = Form(None),
     transformations: Optional[str] = Form(None),  # JSON string of transformation IDs
     embed: str = Form("false"),  # Accept as string, convert to bool
     delete_source: str = Form("false"),  # Accept as string, convert to bool
@@ -237,6 +240,9 @@ def parse_source_form_data(
             url=url,
             content=content,
             title=title,
+            kind=kind,
+            author=author,
+            isbn=isbn,
             file_path=None,  # Will be set later if file is uploaded
             transformations=transformations_list,
             embed=embed_bool,
@@ -257,6 +263,7 @@ def parse_source_form_data(
 @router.get("/sources", response_model=List[SourceListResponse])
 async def get_sources(
     notebook_id: Optional[str] = Query(None, description="Filter by notebook ID"),
+    kind: Optional[str] = Query(None, pattern="^(source|book)$"),
     limit: int = Query(
         50, ge=1, le=100, description="Number of sources to return (1-100)"
     ),
@@ -290,7 +297,7 @@ async def get_sources(
 
         # Build the query - same projection with or without the notebook
         # filter; only the FROM clause and bound params differ.
-        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        params: dict[str, Any] = {"limit": limit, "offset": offset, "kind": kind}
         if notebook_id:
             # Verify notebook exists first
             notebook = await Notebook.get(notebook_id)
@@ -304,12 +311,13 @@ async def get_sources(
 
         # Query sources - include command field with FETCH
         query = f"""
-            SELECT id, asset, created, title, updated, topics, command,
+            SELECT id, asset, author, created, isbn, kind, title, updated, topics, command,
             string::lowercase(title OR '') AS title_sort,
             ({SOURCE_TYPE_EXPRESSION}) AS type,
             (SELECT VALUE count() FROM source_insight WHERE source = $parent.id GROUP ALL)[0].count OR 0 AS insights_count,
             (SELECT VALUE id FROM source_embedding WHERE source = $parent.id LIMIT 1) != [] AS embedded
             FROM {from_clause}
+            WHERE ($kind = NONE OR kind = $kind)
             {order_clause}
             LIMIT $limit START $offset
             FETCH command
@@ -350,6 +358,9 @@ async def get_sources(
                 SourceListResponse(
                     id=row["id"],
                     title=row.get("title"),
+                    kind=row.get("kind") or "source",
+                    author=row.get("author"),
+                    isbn=row.get("isbn"),
                     topics=row.get("topics") or [],
                     asset=AssetModel(
                         file_path=row["asset"].get("file_path")
@@ -393,6 +404,9 @@ def _source_to_response(
     fields: dict[str, Any] = {
         "id": source.id or "",
         "title": source.title,
+        "kind": source.kind,
+        "author": source.author,
+        "isbn": source.isbn,
         "topics": source.topics or [],
         "asset": AssetModel(
             file_path=source.asset.file_path,
@@ -496,6 +510,9 @@ async def _create_source_async_path(
 
     source = Source(
         title=source_data.title or "Processing...",
+        kind=source_data.kind,
+        author=source_data.author,
+        isbn=source_data.isbn,
         topics=[],
         asset=source_asset,
     )
@@ -578,6 +595,9 @@ async def _create_source_sync_path(
         # Create source record - let SurrealDB generate the ID
         source = Source(
             title=source_data.title or "Processing...",
+            kind=source_data.kind,
+            author=source_data.author,
+            isbn=source_data.isbn,
             topics=[],
         )
         await source.save()

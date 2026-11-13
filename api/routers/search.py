@@ -8,6 +8,7 @@ from loguru import logger
 from api.models import AskRequest, AskResponse, SearchRequest, SearchResponse
 from open_notebook.ai.models import Model, model_manager
 from open_notebook.domain.notebook import (
+    resolve_book_scope,
     resolve_notebook_scope,
     text_search,
     vector_search,
@@ -80,6 +81,7 @@ async def stream_ask_response(
     answer_model: Model,
     final_answer_model: Model,
     notebook_ids: List[str],
+    book_ids: List[str],
 ) -> AsyncGenerator[str, None]:
     """Stream the ask response as Server-Sent Events."""
     try:
@@ -88,7 +90,7 @@ async def stream_ask_response(
         # LangGraph accepts a partial state dict at runtime, but its typed
         # overloads require the full state type (langgraph typing limitation).
         async for chunk in ask_graph.astream(  # type: ignore[call-overload]
-            input=dict(question=question, notebook_ids=notebook_ids),
+            input=dict(question=question, notebook_ids=notebook_ids, book_ids=book_ids),
             config=dict(
                 configurable=dict(
                     strategy_model=strategy_model.id,
@@ -144,6 +146,7 @@ async def ask_knowledge_base(ask_request: AskRequest):
         # Cheapest check first: a malformed or unknown scope fails before any
         # model lookup or embedding check can mask it.
         notebook_ids = await resolve_notebook_scope(ask_request.scope_notebook_ids)
+        book_ids = await resolve_book_scope(ask_request.scope_book_ids)
 
         # Validate models exist
         strategy_model = await Model.get(ask_request.strategy_model)
@@ -181,6 +184,7 @@ async def ask_knowledge_base(ask_request: AskRequest):
                 answer_model,
                 final_answer_model,
                 notebook_ids,
+                book_ids,
             ),
             media_type="text/event-stream",
             headers={
@@ -206,6 +210,7 @@ async def ask_knowledge_base_simple(ask_request: AskRequest):
         # Cheapest check first: a malformed or unknown scope fails before any
         # model lookup or embedding check can mask it.
         notebook_ids = await resolve_notebook_scope(ask_request.scope_notebook_ids)
+        book_ids = await resolve_book_scope(ask_request.scope_book_ids)
 
         # Validate models exist
         strategy_model = await Model.get(ask_request.strategy_model)
@@ -240,7 +245,11 @@ async def ask_knowledge_base_simple(ask_request: AskRequest):
         # LangGraph accepts a partial state dict at runtime, but its typed
         # overloads require the full state type (langgraph typing limitation).
         async for chunk in ask_graph.astream(  # type: ignore[call-overload]
-            input=dict(question=ask_request.question, notebook_ids=notebook_ids),
+            input=dict(
+                question=ask_request.question,
+                notebook_ids=notebook_ids,
+                book_ids=book_ids,
+            ),
             config=dict(
                 configurable=dict(
                     strategy_model=strategy_model.id,

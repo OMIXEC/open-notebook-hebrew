@@ -17,6 +17,7 @@ interface AskModels {
 interface AskOptions {
   /** Notebook ids to scope the search to; empty = whole knowledge base. */
   notebookIds?: string[]
+  bookIds?: string[]
 }
 
 interface StrategyData {
@@ -144,6 +145,9 @@ export function useAsk() {
         final_answer_model: models.finalAnswer,
         ...(options.notebookIds && options.notebookIds.length > 0
           ? { notebook_ids: options.notebookIds }
+          : {}),
+        ...(options.bookIds && options.bookIds.length > 0
+          ? { book_ids: options.bookIds }
           : {})
       }, signal)
 

@@ -12,6 +12,7 @@ import { esES } from './es-ES';
 import { deDE } from './de-DE';
 import { plPL } from './pl-PL';
 import { trTR } from './tr-TR';
+import { heIL } from './he-IL';
 
 export const resources = {
   'zh-CN': { translation: zhCN },
@@ -28,6 +29,7 @@ export const resources = {
   'de-DE': { translation: deDE },
   'pl-PL': { translation: plPL },
   'tr-TR': { translation: trTR },
+  'he-IL': { translation: heIL },
 } as const;
 
 export type TranslationKeys = typeof enUS;
@@ -54,6 +56,7 @@ export const languages: Language[] = [
   { code: 'es-ES', label: 'Español' },
   { code: 'de-DE', label: 'Deutsch' },
   { code: 'pl-PL', label: 'Polski' },
+  { code: 'he-IL', label: 'עברית' },
 ];
 
-export { zhCN, enUS, zhTW, ptBR, jaJP, itIT, frFR, ruRU, bnIN, caES, esES, deDE, plPL, trTR };
+export { zhCN, enUS, zhTW, ptBR, jaJP, itIT, frFR, ruRU, bnIN, caES, esES, deDE, plPL, trTR, heIL };

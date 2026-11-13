@@ -15,6 +15,7 @@ from open_notebook.exceptions import (
     InvalidInputError,
     NotFoundError,
 )
+from open_notebook.utils.book_quotes import book_location_from_chunk
 
 
 class Notebook(ObjectModel):
@@ -409,6 +410,9 @@ class Source(ObjectModel):
     table_name: ClassVar[str] = "source"
     asset: Optional[Asset] = None
     title: Optional[str] = None
+    kind: str = "source"
+    author: Optional[str] = None
+    isbn: Optional[str] = None
     topics: Optional[List[str]] = Field(default_factory=list)
     full_text: Optional[str] = None
     last_viewed_at: Optional[datetime] = None
@@ -820,6 +824,40 @@ async def resolve_notebook_scope(notebook_ids: List[str]) -> List[str]:
     return notebook_ids
 
 
+async def resolve_book_scope(source_ids: List[str]) -> List[str]:
+    """Validate that every selected source exists and is marked as a book."""
+    if not source_ids:
+        return []
+
+    record_ids: List[RecordID] = []
+    invalid: List[str] = []
+    for source_id in source_ids:
+        if not source_id.startswith("source:") or not source_id[len("source:") :]:
+            invalid.append(source_id)
+            continue
+        try:
+            record_ids.append(ensure_record_id(source_id))
+        except Exception:
+            invalid.append(source_id)
+    if invalid:
+        raise InvalidInputError(f"Invalid book id(s): {', '.join(invalid)}")
+
+    try:
+        rows = await repo_query(
+            "SELECT id FROM source WHERE id IN $ids AND kind = 'book'",
+            {"ids": record_ids},
+        )
+    except Exception as e:
+        logger.error(f"Error resolving book scope: {e}")
+        raise DatabaseOperationError("Failed to resolve book scope") from e
+
+    found = {str(row["id"]) for row in rows}
+    missing = [source_id for source_id in source_ids if source_id not in found]
+    if missing:
+        raise NotFoundError(f"Book(s) not found: {', '.join(missing)}")
+    return list(dict.fromkeys(source_ids))
+
+
 def _scope_record_ids(notebook_ids: Optional[List[str]]) -> Optional[List[RecordID]]:
     """Normalize a notebook scope for fn::text_search / fn::vector_search.
 
@@ -892,6 +930,7 @@ async def vector_search(
     note: bool = True,
     minimum_score=0.2,
     notebook_ids: Optional[List[str]] = None,
+    source_ids: Optional[List[str]] = None,
 ):
     if not keyword:
         raise InvalidInputError("Search keyword cannot be empty")
@@ -900,19 +939,49 @@ async def vector_search(
 
         # Use unified embedding function (handles chunking if query is very long)
         embed = await generate_embedding(keyword)
-        search_results = await repo_query(
-            """
-            SELECT * FROM fn::vector_search($embed, $results, $source, $note, $minimum_score, $notebook_ids);
-            """,
-            {
-                "embed": embed,
-                "results": results,
-                "source": source,
-                "note": note,
-                "minimum_score": minimum_score,
-                "notebook_ids": _scope_record_ids(notebook_ids),
-            },
-        )
+        if source_ids:
+            search_results = await repo_query(
+                """
+                SELECT id, source AS parent_id, source.title AS title, content,
+                    vector::similarity::cosine(embedding, $embed) AS similarity
+                FROM source_embedding
+                WHERE source IN $source_ids
+                  AND source.kind = 'book'
+                  AND embedding != NONE
+                  AND array::len(embedding) = array::len($embed)
+                  AND vector::similarity::cosine(embedding, $embed) >= $minimum_score
+                ORDER BY similarity DESC
+                LIMIT $results
+                """,
+                {
+                    "embed": embed,
+                    "results": results,
+                    "minimum_score": minimum_score,
+                    "source_ids": [
+                        ensure_record_id(source_id) for source_id in source_ids
+                    ],
+                },
+            )
+            for result in search_results or []:
+                content = result.get("content")
+                if content:
+                    location = book_location_from_chunk(str(content))
+                    if location:
+                        result["location"] = location
+        else:
+            search_results = await repo_query(
+                """
+                SELECT * FROM fn::vector_search($embed, $results, $source, $note, $minimum_score, $notebook_ids);
+                """,
+                {
+                    "embed": embed,
+                    "results": results,
+                    "source": source,
+                    "note": note,
+                    "minimum_score": minimum_score,
+                    "notebook_ids": _scope_record_ids(notebook_ids),
+                },
+            )
         # SurrealDB fn::vector_search declares ORDER BY similarity DESC, but the
         # SELECT * FROM fn::... wrapper can still return rows out of rank order.
         # Enforce descending similarity (stable by id for ties) before returning.

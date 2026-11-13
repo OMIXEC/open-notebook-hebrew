@@ -44,6 +44,122 @@ class TestSearchLimitValidation:
         mock_text_search.assert_awaited_once()
 
 
+class TestBookScopedAsk:
+    def test_ask_request_accepts_multiple_book_ids(self):
+        from api.models import AskRequest
+
+        request = AskRequest(
+            question="What does the author say?",
+            strategy_model="model:strategy",
+            answer_model="model:answer",
+            final_answer_model="model:final",
+            book_ids=["source:book-one", "source:book-two"],
+        )
+
+        assert request.scope_book_ids == ["source:book-one", "source:book-two"]
+
+    def test_ask_request_deduplicates_book_ids(self):
+        from api.models import AskRequest
+
+        request = AskRequest(
+            question="Compare them",
+            strategy_model="model:strategy",
+            answer_model="model:answer",
+            final_answer_model="model:final",
+            book_ids=["source:book-one", "source:book-one"],
+        )
+
+        assert request.scope_book_ids == ["source:book-one"]
+
+    def test_ask_request_rejects_empty_explicit_book_scope(self):
+        from pydantic import ValidationError
+
+        from api.models import AskRequest
+
+        with pytest.raises(ValidationError):
+            AskRequest(
+                question="q",
+                strategy_model="model:a",
+                answer_model="model:b",
+                final_answer_model="model:c",
+                book_ids=[],
+            )
+
+
+class TestBookScopedVectorSearch:
+    @pytest.mark.asyncio
+    async def test_vector_search_binds_only_selected_book_source_ids(self):
+        from surrealdb import RecordID
+
+        from open_notebook.domain import notebook as notebook_module
+
+        with (
+            patch(
+                "open_notebook.utils.embedding.generate_embedding",
+                new_callable=AsyncMock,
+                return_value=[0.2, 0.3],
+            ),
+            patch.object(
+                notebook_module, "repo_query", new_callable=AsyncMock, return_value=[]
+            ) as mock_query,
+        ):
+            await notebook_module.vector_search(
+                "question", 10, source_ids=["source:one", "source:two"]
+            )
+
+        query, params = mock_query.await_args.args
+        assert "source IN $source_ids" in query
+        assert params["source_ids"] == [
+            RecordID("source", "one"),
+            RecordID("source", "two"),
+        ]
+
+    @pytest.mark.asyncio
+    async def test_book_scope_rejects_sources_not_marked_as_books(self):
+        from open_notebook.domain import notebook as notebook_module
+        from open_notebook.exceptions import NotFoundError
+
+        with patch.object(
+            notebook_module,
+            "repo_query",
+            new_callable=AsyncMock,
+            return_value=[],
+        ):
+            with pytest.raises(NotFoundError):
+                await notebook_module.resolve_book_scope(["source:not-a-book"])
+
+
+class TestBookLibraryList:
+    @patch("api.routers.sources.repo_query", new_callable=AsyncMock)
+    def test_kind_book_filters_sources_and_returns_book_metadata(
+        self, mock_query, client
+    ):
+        mock_query.return_value = [
+            {
+                "id": "source:book-one",
+                "asset": {"file_path": "/uploads/book.pdf"},
+                "author": "Example Author",
+                "isbn": "9780000000000",
+                "kind": "book",
+                "created": "2026-01-01T00:00:00Z",
+                "title": "Example Book",
+                "updated": "2026-01-01T00:00:00Z",
+                "topics": [],
+                "command": None,
+                "embedded": True,
+                "insights_count": 0,
+            }
+        ]
+
+        response = client.get("/api/sources", params={"kind": "book"})
+
+        assert response.status_code == 200
+        assert response.json()[0]["kind"] == "book"
+        assert response.json()[0]["author"] == "Example Author"
+        assert "WHERE ($kind = NONE OR kind = $kind)" in mock_query.await_args.args[0]
+        assert mock_query.await_args.args[1]["kind"] == "book"
+
+
 class TestTextSearchHighlightOverflowFallback:
     """text_search() must fall back to vector search on a highlight position overflow (#648)."""
 
