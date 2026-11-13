@@ -1,0 +1,6 @@
+-- Migration 26: index source kind for library filters.
+DEFINE FIELD IF NOT EXISTS kind ON TABLE source TYPE string DEFAULT 'source';
+DEFINE FIELD IF NOT EXISTS author ON TABLE source TYPE option<string>;
+DEFINE FIELD IF NOT EXISTS isbn ON TABLE source TYPE option<string>;
+UPDATE source SET kind = 'source' WHERE kind = NONE;
+DEFINE INDEX IF NOT EXISTS idx_source_kind ON TABLE source FIELDS kind;

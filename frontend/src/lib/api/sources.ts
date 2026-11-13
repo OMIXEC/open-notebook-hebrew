@@ -19,6 +19,7 @@ export const sourcesApi = {
     offset?: number
     sort_by?: SourceSortField
     sort_order?: 'asc' | 'desc'
+    kind?: 'source' | 'book'
   }) => {
     const response = await apiClient.get<SourceListResponse[]>('/sources', { params })
     return response.data
@@ -45,6 +46,9 @@ export const sourcesApi = {
     if (data.title) {
       formData.append('title', data.title)
     }
+    if (data.kind) formData.append('kind', data.kind)
+    if (data.author) formData.append('author', data.author)
+    if (data.isbn) formData.append('isbn', data.isbn)
     if (data.url) {
       formData.append('url', data.url)
     }

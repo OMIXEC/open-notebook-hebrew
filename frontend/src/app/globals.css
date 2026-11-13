@@ -4,6 +4,72 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+html[dir="rtl"] {
+  font-family: Arial, "Noto Sans Hebrew", sans-serif;
+}
+
+html[dir="rtl"] .ml-1 { margin-left: 0; margin-right: calc(var(--spacing) * 1); }
+html[dir="rtl"] .ml-0\.5 { margin-left: 0; margin-right: calc(var(--spacing) * 0.5); }
+html[dir="rtl"] .ml-1\.5 { margin-left: 0; margin-right: calc(var(--spacing) * 1.5); }
+html[dir="rtl"] .ml-2 { margin-left: 0; margin-right: calc(var(--spacing) * 2); }
+html[dir="rtl"] .ml-3 { margin-left: 0; margin-right: calc(var(--spacing) * 3); }
+html[dir="rtl"] .ml-4 { margin-left: 0; margin-right: calc(var(--spacing) * 4); }
+html[dir="rtl"] .mr-1 { margin-right: 0; margin-left: calc(var(--spacing) * 1); }
+html[dir="rtl"] .mr-0\.5 { margin-right: 0; margin-left: calc(var(--spacing) * 0.5); }
+html[dir="rtl"] .mr-1\.5 { margin-right: 0; margin-left: calc(var(--spacing) * 1.5); }
+html[dir="rtl"] .mr-2 { margin-right: 0; margin-left: calc(var(--spacing) * 2); }
+html[dir="rtl"] .mr-3 { margin-right: 0; margin-left: calc(var(--spacing) * 3); }
+html[dir="rtl"] .mr-4 { margin-right: 0; margin-left: calc(var(--spacing) * 4); }
+html[dir="rtl"] .mr-6 { margin-right: 0; margin-left: calc(var(--spacing) * 6); }
+html[dir="rtl"] .ml-0 { margin-left: 0; margin-right: 0; }
+html[dir="rtl"] .mr-0 { margin-right: 0; margin-left: 0; }
+html[dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+html[dir="rtl"] .mr-auto { margin-right: 0; margin-left: auto; }
+html[dir="rtl"] [class~="-mr-6"] { margin-right: 0; margin-left: calc(var(--spacing) * -6); }
+html[dir="rtl"] .pl-0 { padding-left: 0; padding-right: 0; }
+html[dir="rtl"] .pl-0\.5 { padding-left: 0; padding-right: calc(var(--spacing) * 0.5); }
+html[dir="rtl"] .pl-1 { padding-left: 0; padding-right: calc(var(--spacing) * 1); }
+html[dir="rtl"] .pl-1\.5 { padding-left: 0; padding-right: calc(var(--spacing) * 1.5); }
+html[dir="rtl"] .pl-2 { padding-left: 0; padding-right: calc(var(--spacing) * 2); }
+html[dir="rtl"] .pl-4 { padding-left: 0; padding-right: calc(var(--spacing) * 4); }
+html[dir="rtl"] .pl-5 { padding-left: 0; padding-right: calc(var(--spacing) * 5); }
+html[dir="rtl"] .pl-6 { padding-left: 0; padding-right: calc(var(--spacing) * 6); }
+html[dir="rtl"] .pl-7 { padding-left: 0; padding-right: calc(var(--spacing) * 7); }
+html[dir="rtl"] .pl-8 { padding-left: 0; padding-right: calc(var(--spacing) * 8); }
+html[dir="rtl"] .pl-10 { padding-left: 0; padding-right: calc(var(--spacing) * 10); }
+html[dir="rtl"] .pr-0 { padding-right: 0; padding-left: 0; }
+html[dir="rtl"] .pr-0\.5 { padding-right: 0; padding-left: calc(var(--spacing) * 0.5); }
+html[dir="rtl"] .pr-1 { padding-right: 0; padding-left: calc(var(--spacing) * 1); }
+html[dir="rtl"] .pr-1\.5 { padding-right: 0; padding-left: calc(var(--spacing) * 1.5); }
+html[dir="rtl"] .pr-2 { padding-right: 0; padding-left: calc(var(--spacing) * 2); }
+html[dir="rtl"] .pr-4 { padding-right: 0; padding-left: calc(var(--spacing) * 4); }
+html[dir="rtl"] .pr-6 { padding-right: 0; padding-left: calc(var(--spacing) * 6); }
+html[dir="rtl"] .pr-8 { padding-right: 0; padding-left: calc(var(--spacing) * 8); }
+html[dir="rtl"] .pr-10 { padding-right: 0; padding-left: calc(var(--spacing) * 10); }
+html[dir="rtl"] .left-2 { left: auto; right: calc(var(--spacing) * 2); }
+html[dir="rtl"] .left-1 { left: auto; right: calc(var(--spacing) * 1); }
+html[dir="rtl"] .left-1\.5 { left: auto; right: calc(var(--spacing) * 1.5); }
+html[dir="rtl"] .left-3 { left: auto; right: calc(var(--spacing) * 3); }
+html[dir="rtl"] .left-4 { left: auto; right: calc(var(--spacing) * 4); }
+html[dir="rtl"] [class~="-left-1.5"] { left: auto; right: calc(var(--spacing) * -1.5); }
+html[dir="rtl"] [class~="-left-2"] { left: auto; right: calc(var(--spacing) * -2); }
+html[dir="rtl"] .right-1 { right: auto; left: calc(var(--spacing) * 1); }
+html[dir="rtl"] .right-1\.5 { right: auto; left: calc(var(--spacing) * 1.5); }
+html[dir="rtl"] .right-2 { right: auto; left: calc(var(--spacing) * 2); }
+html[dir="rtl"] .right-3 { right: auto; left: calc(var(--spacing) * 3); }
+html[dir="rtl"] .right-4 { right: auto; left: calc(var(--spacing) * 4); }
+html[dir="rtl"] [class~="-right-2"] { right: auto; left: calc(var(--spacing) * -2); }
+html[dir="rtl"] [class~="left-1/2"] { left: auto; right: 50%; }
+html[dir="rtl"] [class~="right-1/2"] { right: auto; left: 50%; }
+html[dir="rtl"] [class~="text-left"] { text-align: right; }
+html[dir="rtl"] [class~="text-right"] { text-align: left; }
+html[dir="rtl"] [class~="border-l-2"] { border-left-width: 0; border-right-width: 2px; }
+html[dir="rtl"] [class~="border-l-4"] { border-left-width: 0; border-right-width: 4px; }
+html[dir="rtl"] [class~="border-l"] { border-left-width: 0; border-right-width: 1px; }
+html[dir="rtl"] [class~="border-r"] { border-right-width: 0; border-left-width: 1px; }
+html[dir="rtl"] [class~="border-l-fern"] { border-left-color: transparent; border-right-color: var(--color-fern); }
+html[dir="rtl"] [class~="border-l-transparent"] { border-left-color: transparent; border-right-color: transparent; }
+
 /* ============================================================================
    OPEN NOTEBOOK — DESIGN FOUNDATION ("Quiet Green")
 

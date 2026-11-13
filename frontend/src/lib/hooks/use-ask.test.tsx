@@ -116,4 +116,21 @@ describe('useAsk notebook scope (#574, #87)', () => {
 
     expect(vi.mocked(searchApi.askKnowledgeBase).mock.calls[0][0]).not.toHaveProperty('notebook_ids')
   })
+
+  it('sends book_ids when an Ask is scoped to selected library books', async () => {
+    vi.mocked(searchApi.askKnowledgeBase).mockResolvedValue(
+      sseStream([{ type: 'complete', final_answer: 'a' }]) as any
+    )
+    const { result } = renderHook(() => useAsk())
+
+    await act(async () => {
+      await result.current.sendAsk('Compare the arguments', MODELS, {
+        bookIds: ['source:book-one', 'source:book-two'],
+      })
+    })
+
+    expect(vi.mocked(searchApi.askKnowledgeBase).mock.calls[0][0]).toMatchObject({
+      book_ids: ['source:book-one', 'source:book-two'],
+    })
+  })
 })

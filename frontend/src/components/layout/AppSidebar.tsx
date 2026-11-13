@@ -28,6 +28,7 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 import { Separator } from '@/components/ui/separator'
 import {
   Book,
+  BookOpen,
   Search,
   Mic,
   Bot,
@@ -47,6 +48,7 @@ const getNavigation = (t: TFunction) => [
     title: t('navigation.collect'),
     items: [
       { name: t('navigation.sources'), href: '/sources', icon: FileText, iconClass: 'text-sage' },
+      { name: t('books.title'), href: '/books', icon: BookOpen, iconClass: 'text-gold' },
     ],
   },
   {

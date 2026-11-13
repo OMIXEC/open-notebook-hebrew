@@ -304,6 +304,8 @@ export function createReferenceLinkComponent(
             onReferenceClick(type, id)
           }}
           className="text-primary hover:underline cursor-pointer inline font-medium"
+          dir="ltr"
+          style={{ unicodeBidi: 'isolate' }}
           type="button"
         >
           <IconComponent className="h-3 w-3 inline mr-1" aria-hidden="true" />
@@ -463,6 +465,8 @@ export function createCompactReferenceLinkComponent(
             onReferenceClick(type, id)
           }}
           className="text-primary hover:underline cursor-pointer inline font-medium"
+          dir="ltr"
+          style={{ unicodeBidi: 'isolate' }}
           type="button"
         >
           {children}

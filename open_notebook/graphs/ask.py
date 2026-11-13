@@ -16,6 +16,7 @@ from open_notebook.exceptions import (
     IncompleteGenerationError,
     OpenNotebookError,
 )
+from open_notebook.utils.book_quotes import keep_exact_locations, keep_exact_quotes
 from open_notebook.utils import clean_thinking_content
 from open_notebook.utils.error_classifier import classify_error
 from open_notebook.utils.text_utils import extract_text_content
@@ -35,6 +36,7 @@ class SubGraphState(TypedDict):
     answer: str
     ids: list  # Added for provide_answer function
     notebook_ids: list  # Notebook scope forwarded from ThreadState (#574, #87)
+    book_ids: list
 
 
 class Search(BaseModel):
@@ -60,6 +62,8 @@ class ThreadState(TypedDict):
     # Optional notebook scope: when non-empty, every search the strategy fans
     # out runs only against sources/notes linked to these notebooks (#574, #87).
     notebook_ids: list
+    book_ids: list
+    book_evidence: Annotated[list, operator.add]
 
 
 async def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict:
@@ -118,6 +122,7 @@ async def trigger_queries(state: ThreadState, config: RunnableConfig):
                 "instructions": s.instructions,
                 "term": s.term,
                 "notebook_ids": state.get("notebook_ids") or [],
+                "book_ids": state.get("book_ids") or [],
                 # "type": s.type,
             },
         )
@@ -137,11 +142,12 @@ async def provide_answer(state: SubGraphState, config: RunnableConfig) -> dict:
             True,
             True,
             notebook_ids=state.get("notebook_ids") or None,
+            source_ids=state.get("book_ids") or None,
         )
         if len(results) == 0:
             return {"answers": []}
         payload["results"] = results
-        ids = [r["id"] for r in results]
+        ids = list(dict.fromkeys(str(r.get("parent_id") or r["id"]) for r in results))
         payload["ids"] = ids
         system_prompt = Prompter(prompt_template="ask/query_process").render(
             data=payload  # type: ignore[arg-type]
@@ -154,10 +160,24 @@ async def provide_answer(state: SubGraphState, config: RunnableConfig) -> dict:
         )
         ai_message = await model.ainvoke(system_prompt)
         ai_content = clean_thinking_content(extract_text_content(ai_message.content))
+        if state.get("book_ids"):
+            evidence: list[str] = []
+            for result in results:
+                matches = result.get("matches")
+                if isinstance(matches, str):
+                    evidence.append(matches)
+                elif isinstance(matches, list):
+                    evidence.extend(str(match) for match in matches if match)
+                elif result.get("content"):
+                    evidence.append(str(result["content"]))
+            ai_content = keep_exact_quotes(ai_content, evidence)
+            ai_content = keep_exact_locations(ai_content, evidence)
         if not ai_content.strip():
             # Nothing left after stripping thinking content — an empty partial
             # answer only pollutes the final synthesis.
             return {"answers": []}
+        if state.get("book_ids"):
+            return {"answers": [ai_content], "book_evidence": evidence}
         return {"answers": [ai_content]}
     except OpenNotebookError:
         raise
@@ -177,6 +197,10 @@ async def write_final_answer(state: ThreadState, config: RunnableConfig) -> dict
         )
         ai_message = await model.ainvoke(system_prompt)
         final_content = clean_thinking_content(extract_text_content(ai_message.content))
+        if state.get("book_ids"):
+            book_evidence = state.get("book_evidence") or []
+            final_content = keep_exact_quotes(final_content, book_evidence)
+            final_content = keep_exact_locations(final_content, book_evidence)
         if not final_content.strip():
             raise IncompleteGenerationError(
                 "The final answer model returned an empty response. Try again, or "

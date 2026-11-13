@@ -61,11 +61,12 @@ In a world dominated by Artificial Intelligence, having the ability to think �
 **Open Notebook empowers you to:**
 - 🔒 **Control your data** - Keep your research private and secure
 - 🤖 **Choose your AI models** - 20+ providers including OpenAI, Anthropic, Google, Mistral, Ollama and any OpenAI-compatible server (LM Studio, vLLM)
-- 📚 **Organize multi-modal content** - PDFs, videos, audio, web pages, and more
+- 📚 **Organize multi-modal content** - PDFs, EPUB books, videos, audio, web pages, and more
+- 📖 **Build a book library** - Ask across selected books, use built-in reading prompts, and ground answers in exact quotations
 - 🎙️ **Generate professional podcasts** - Advanced multi-speaker podcast generation
 - 🔍 **Search intelligently** - Full-text and vector search across all your content
 - 💬 **Chat with context** - AI conversations powered by your research
-- 🌐 **Multi-language UI** - English, Bengali, Catalan, Chinese (Simplified & Traditional), French, German, Italian, Japanese, Polish, Portuguese, Russian, Spanish and Turkish
+- 🌐 **Multi-language UI** - English, Bengali, Catalan, Chinese (Simplified & Traditional), French, German, Hebrew (RTL), Italian, Japanese, Polish, Portuguese, Russian, Spanish and Turkish
 
 Learn more about our project at [https://www.open-notebook.ai](https://www.open-notebook.ai)
 
@@ -206,7 +207,8 @@ Thanks to the [Esperanto](https://github.com/lfnovo/esperanto) library, we suppo
 ### Core Capabilities
 - **🔒 Privacy-First**: Self-hosted; with local models nothing leaves your machine
 - **🎯 Multi-Notebook Organization**: Manage multiple research projects seamlessly
-- **📚 Universal Content Support**: PDFs, videos, audio, web pages, Office docs, and more
+- **📚 Universal Content Support**: PDFs, EPUB books, videos, audio, web pages, Office docs, and more
+- **📖 Book Library**: Organize books, ask questions across selected titles, and use prompts for summaries, themes, concepts, timelines, characters, and exact-quote lookup
 - **🤖 Multi-Model AI Support**: 20+ providers including OpenAI, Anthropic, Ollama, Google, LM Studio, and more
 - **🎙️ Professional Podcast Generation**: Advanced multi-speaker podcasts with Episode Profiles
 - **🔍 Intelligent Search**: Full-text and vector search across all your content
@@ -238,6 +240,7 @@ Thanks to the [Esperanto](https://github.com/lfnovo/esperanto) library, we suppo
 - **[📱 Interface Overview](docs/3-USER-GUIDE/interface-overview.md)** - Understanding the layout
 - **[📚 Notebooks, Sources & Notes](docs/2-CORE-CONCEPTS/notebooks-sources-notes.md)** - Organizing your research
 - **[📄 Adding Sources](docs/3-USER-GUIDE/adding-sources.md)** - Managing content types
+- **[📚 Books Library](docs/3-USER-GUIDE/adding-sources.md#books-library)** - Upload PDF and EPUB books and ask across selected titles
 - **[📝 Working with Notes](docs/3-USER-GUIDE/working-with-notes.md)** - Creating and managing notes
 - **[💬 Chatting Effectively](docs/3-USER-GUIDE/chat-effectively.md)** - AI conversations
 - **[🔍 Search](docs/3-USER-GUIDE/search.md)** - Finding information

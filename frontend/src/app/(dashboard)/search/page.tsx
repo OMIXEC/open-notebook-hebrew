@@ -46,6 +46,10 @@ export default function SearchPage() {
 
   // Notebook scope shared by Ask and Search; empty = whole knowledge base (#574, #87)
   const [scopeNotebookIds, setScopeNotebookIds] = useState<string[]>([])
+  const [scopeBookIds, setScopeBookIds] = useState<string[]>(() => {
+    const value = searchParams?.get('book_ids')
+    return value ? value.split(',').filter(Boolean) : []
+  })
 
   // Ask state
   const [askQuestion, setAskQuestion] = useState(urlMode === 'ask' ? urlQuery : '')
@@ -115,8 +119,8 @@ export default function SearchPage() {
       finalAnswer: modelDefaults.default_chat_model
     }
 
-    ask.sendAsk(askQuestion, models, { notebookIds: scopeNotebookIds })
-  }, [askQuestion, modelDefaults, customModels, scopeNotebookIds, ask])
+    ask.sendAsk(askQuestion, models, { notebookIds: scopeNotebookIds, bookIds: scopeBookIds })
+  }, [askQuestion, modelDefaults, customModels, scopeNotebookIds, scopeBookIds, ask])
 
   // Auto-trigger search/ask when arriving with URL params
   useEffect(() => {
@@ -140,6 +144,8 @@ export default function SearchPage() {
     const currentQ = searchParams?.get('q') || ''
     const rawCurrentMode = searchParams?.get('mode')
     const currentMode = rawCurrentMode === 'search' ? 'search' : 'ask'
+    const currentBookIds = (searchParams?.get('book_ids') || '').split(',').filter(Boolean)
+    setScopeBookIds((previous) => previous.join(',') === currentBookIds.join(',') ? previous : currentBookIds)
 
     // Check if URL params have changed
     if (currentQ !== lastUrlParamsRef.current.q || currentMode !== lastUrlParamsRef.current.mode) {
@@ -214,11 +220,17 @@ export default function SearchPage() {
                 </div>
 
                 {/* Notebook scope */}
-                <NotebookScopeSelector
-                  selectedIds={scopeNotebookIds}
-                  onChange={setScopeNotebookIds}
-                  disabled={ask.isStreaming}
-                />
+                {scopeBookIds.length > 0 ? (
+                  <p className="text-sm text-muted-foreground" role="status">
+                    {t('books.selectedCount', { count: scopeBookIds.length })}
+                  </p>
+                ) : (
+                  <NotebookScopeSelector
+                    selectedIds={scopeNotebookIds}
+                    onChange={setScopeNotebookIds}
+                    disabled={ask.isStreaming}
+                  />
+                )}
 
                 {/* Models Display */}
                 {!hasEmbeddingModel ? (
@@ -393,13 +405,13 @@ export default function SearchPage() {
                       onValueChange={(value: 'text' | 'vector') => setSearchType(value)}
                       disabled={modelsLoading || searchMutation.isPending}
                     >
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-2">
                         <RadioGroupItem value="text" id="text" />
                         <Label htmlFor="text" className="font-normal cursor-pointer">
                           {t('searchPage.textSearch')}
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-2">
                         <RadioGroupItem
                           value="vector"
                           id="vector"
@@ -419,7 +431,7 @@ export default function SearchPage() {
                   <div className="space-y-2" role="group" aria-labelledby="search-in-label">
                     <span id="search-in-label" className="text-sm font-medium leading-none">{t('searchPage.searchIn')}</span>
                     <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id="sources"
                           name="sources"
@@ -431,7 +443,7 @@ export default function SearchPage() {
                           {t('searchPage.searchSources')}
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id="notes"
                           name="notes"

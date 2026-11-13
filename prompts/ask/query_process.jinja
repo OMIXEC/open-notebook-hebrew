@@ -22,6 +22,16 @@ And provided you with the following instructions to formulate the answer:
 
 Based on the user question, the context and the retrieved results, please formulate the appropriate answer. 
 
+{% if book_ids %}
+BOOK READING MODE
+- Ground the answer only in the selected books and retrieved passages.
+- Any text presented inside quotation marks must be copied character-for-character from a retrieved passage.
+- Do not format passages as Markdown blockquotes; use inline quotation marks only for verified verbatim text.
+- If a passage cannot support an exact quote, paraphrase it without quotation marks.
+- Cite books using their exact source IDs from the retrieved results.
+- Include a page or chapter only when that exact location appears in a retrieved result; never infer one.
+{% endif %}
+
 # RESULTS
 
 {{results}}
